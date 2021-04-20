@@ -12,7 +12,9 @@ public class PlayerInput : MonoBehaviour
 
     public Carpet carpet;
     [HideInInspector]public HouseObject touchedObject;
+    [HideInInspector] public Furniture touchedFurniture;
     [HideInInspector] public GameObject touchedSelectionFx;
+
 
     void Update()
     {
@@ -32,12 +34,7 @@ public class PlayerInput : MonoBehaviour
                 touchedObject = hit.collider.GetComponent<HouseObject>();
             }
 
-            Physics.Raycast(ray, out hit, 1000f, furniture);
 
-            if (hit.collider != null)
-            {
-
-            }
 
             Physics.Raycast(ray, out hit, 1000f, selectionFX);
 
@@ -47,6 +44,22 @@ public class PlayerInput : MonoBehaviour
                 touchedSelectionFx = hit.collider.gameObject;
             }
 
+        }
+
+        if (Input.GetMouseButtonDown(0)) 
+        {
+            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            RaycastHit hit;
+
+            Physics.Raycast(ray, out hit, 1000f, furniture);
+
+            if (hit.collider != null)
+            {
+                touchedFurniture = hit.collider.transform.parent.GetComponent<Furniture>();
+
+                touchedFurniture.isBeingDragged = true;
+            }
         }
         
 

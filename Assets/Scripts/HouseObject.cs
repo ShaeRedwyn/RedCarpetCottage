@@ -5,7 +5,7 @@ using UnityEngine;
 public class HouseObject : MonoBehaviour
 {
     public enum Type { carpetPart, furniture, empty, wall };
-
+    public Type type;
     public Vector3Int position;
 
     void Start()

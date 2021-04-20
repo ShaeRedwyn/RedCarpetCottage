@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FurniturePart : MonoBehaviour
+public class FurniturePart : HouseObject
 {
+
     // dérive de house object, possède une liste de passages avec leurs orientations, référence à la furniture mère
     //
 }
