@@ -4,5 +4,8 @@ using UnityEngine;
 
 public class HiddenSpacePassage : HiddenSpaceObjects
 {
-    // référence a son passage, a une direction
+    public Passages passage;
+    public Orientation orientation;
+
+    public PortalSpaceObject portalSpaceObject;
 }

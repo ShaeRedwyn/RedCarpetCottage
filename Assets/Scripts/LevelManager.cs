@@ -19,7 +19,7 @@ public class LevelManager : MonoBehaviour
     {
         bool inRoom = true;
 
-        if(position.x >= roomDimension || position.x < 0 || position.x >= roomDimension || position.y < 0|| position.z >= roomDimension || position.z < 0)
+        if(position.x >= roomDimension || position.x < 0 || position.y >= roomDimension || position.y < 0|| position.z >= roomDimension || position.z < 0)
         {
             inRoom = false;
         }

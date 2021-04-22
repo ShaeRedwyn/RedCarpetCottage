@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class Carpet : MonoBehaviour
 {
+
     public List<CarpetPart> allCarpetParts;
     public CarpetPart carpetPart;
+    public HiddenSpaceCarpetPart hiddenSpaceCarpetPart;
     public Transform carpetHolder;
 
     public PlayerInput playerInput;
@@ -25,6 +27,8 @@ public class Carpet : MonoBehaviour
     GameObject selectionFxXMinus;
     GameObject selectionFxZPlus;
     GameObject selectionFxZMinus;
+
+    public Orientation endCarpetOrientation;
 
     void Start()
     {
@@ -123,18 +127,22 @@ public class Carpet : MonoBehaviour
         if(selectedFx == selectionFxXPlus)
         {
             selectedFxDirection = Vector3.right;
+            endCarpetOrientation = Orientation.Right;
         }
         if (selectedFx == selectionFxXMinus)
         {
             selectedFxDirection = Vector3.left;
+            endCarpetOrientation = Orientation.Left;
         }
         if (selectedFx == selectionFxZPlus)
         {
             selectedFxDirection = Vector3.forward;
+            endCarpetOrientation = Orientation.Forward;
         }
         if (selectedFx == selectionFxZMinus)
         {
             selectedFxDirection = Vector3.back;
+            endCarpetOrientation = Orientation.Backward;
         }
 
         Vector3Int nextPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x + (int)selectedFxDirection.x, (allCarpetParts[allCarpetParts.Count - 1].position.y + (int)selectedFxDirection.y),
@@ -142,13 +150,30 @@ public class Carpet : MonoBehaviour
 
         while (levelmanager.IsInRoom(nextPosition) && levelmanager.room[nextPosition.x, nextPosition.y, nextPosition.z] == null)
         {
+
             CarpetPart newCarpet;
             newCarpet = Instantiate(carpetPart, nextPosition, Quaternion.identity, carpetHolder);
             newCarpet.position = nextPosition;
+            newCarpet.type = HouseObject.Type.carpetPart;
             allCarpetParts.Add(newCarpet);
             levelmanager.room[nextPosition.x, nextPosition.y, nextPosition.z] = newCarpet;
             nextPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x + (int)selectedFxDirection.x, (allCarpetParts[allCarpetParts.Count - 1].position.y + (int)selectedFxDirection.y),
             (allCarpetParts[allCarpetParts.Count - 1].position.z) + (int)selectedFxDirection.z);
         }
+
+
+        if(levelmanager.IsInRoom(nextPosition) && levelmanager.room[nextPosition.x, nextPosition.y, nextPosition.z].type == HouseObject.Type.furniture)
+        {
+            
+            FurniturePart furnitureInFront = (FurniturePart)levelmanager.room[nextPosition.x, nextPosition.y, nextPosition.z];
+            foreach (HousePassage housePassage in furnitureInFront.allportails)
+            {
+                if(housePassage.orientation == endCarpetOrientation)
+                {
+                    housePassage.passage.PassCarpetRoomToHiddenSpace(hiddenSpaceCarpetPart);
+                }
+            }
+        }
+
     }
 }
