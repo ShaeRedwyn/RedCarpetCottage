@@ -252,6 +252,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allCarpetParts: []
+  allHiddenCarpetParts: []
+  hiddenSpace: {fileID: 285140480}
   carpetPart: {fileID: 8072735784541938434, guid: f55b35ca5e29441458f5e6e5b6105e34,
     type: 3}
   hiddenSpaceCarpetPart: {fileID: 5599620624241334903, guid: f21867351d59bd64cae12ac9078e7bdb,
@@ -261,7 +263,9 @@ MonoBehaviour:
   levelmanager: {fileID: 1584201829}
   hasTouchedCarpet: 0
   hasTouchedSelectionFX: 0
+  hasTouchedHiddenSelectionFX: 0
   isChoosingDirection: 0
+  isHiddenCarpetTouched: 0
   selectionFX: {fileID: 3130096929909854968, guid: bab1e915fc75f954686d1184ad2659e3,
     type: 3}
   initialCarpet: {fileID: 1389374106}
@@ -288,10 +292,16 @@ MonoBehaviour:
   selectionFX:
     serializedVersion: 2
     m_Bits: 512
+  hiddenCarpetMask:
+    serializedVersion: 2
+    m_Bits: 2048
   carpet: {fileID: 470368966}
   touchedObject: {fileID: 0}
   touchedFurniture: {fileID: 0}
   touchedSelectionFx: {fileID: 0}
+  hiddenTouchedObject: {fileID: 0}
+  cameraIso: {fileID: 980447915}
+  camera2D: {fileID: 679154103}
 --- !u!4 &470368968
 Transform:
   m_ObjectHideFlags: 0
@@ -616,6 +626,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08acbcac4a2f63d47949c1027bbbde52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  type: 0
+  position: {x: 0, y: 0}
   passage: {fileID: 1480651534}
   orientation: 0
   portalSpaceObject: {fileID: 0}
@@ -1364,6 +1376,7 @@ MonoBehaviour:
   hiddenSpacePassage: {fileID: 705847130}
   levelManager: {fileID: 1584201829}
   hiddenSpace: {fileID: 285140480}
+  carpet: {fileID: 470368966}
 --- !u!4 &1480651535
 Transform:
   m_ObjectHideFlags: 0

@@ -8,6 +8,7 @@ public class Passages : MonoBehaviour
     public HiddenSpacePassage hiddenSpacePassage;
     public LevelManager levelManager;
     public HiddenSpace hiddenSpace;
+    public Carpet carpet;
 
     public void Start()
     {
@@ -37,7 +38,9 @@ public class Passages : MonoBehaviour
         }
 
         HiddenSpaceCarpetPart newCarpetPart = Instantiate(hiddenSpaceCarpetPrefab, hiddenSpace.GetWorldPosition(exitPosition), hiddenSpaceCarpetPrefab.transform.rotation);
-        hiddenSpace.hiddenSpace[exitPosition.x, exitPosition.y] = newCarpetPart;
+        hiddenSpace.hiddenSpace[exitPosition.x , exitPosition.y] = newCarpetPart;
+        newCarpetPart.position = exitPosition;
+        carpet.allHiddenCarpetParts.Add(newCarpetPart);
     }
 
     // comportement de traverser le passage : quand le tapis touche le housepassage, le tapis ressort dans le hiddenpassage

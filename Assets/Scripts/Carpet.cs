@@ -6,6 +6,8 @@ public class Carpet : MonoBehaviour
 {
 
     public List<CarpetPart> allCarpetParts;
+    public List<HiddenSpaceCarpetPart> allHiddenCarpetParts;
+    public HiddenSpace hiddenSpace;
     public CarpetPart carpetPart;
     public HiddenSpaceCarpetPart hiddenSpaceCarpetPart;
     public Transform carpetHolder;
@@ -15,9 +17,14 @@ public class Carpet : MonoBehaviour
 
     public bool hasTouchedCarpet;
     public bool hasTouchedSelectionFX;
+    public bool hasTouchedHiddenSelectionFX;
     public bool isChoosingDirection;
+    public bool isHiddenCarpetTouched;
+    public bool carpetIsInHiddenSpace;
 
     public GameObject selectionFX;
+    Vector2Int fxHiddenSpaceGridPosition = Vector2Int.zero;
+    Vector3 fxHiddenSpaceWorldPosition;
 
     public CarpetPart initialCarpet;
 
@@ -41,7 +48,7 @@ public class Carpet : MonoBehaviour
 
     void Update()
     {
-        if (hasTouchedCarpet == true)
+        if (hasTouchedCarpet == true && carpetIsInHiddenSpace == false)
         {
             if (playerInput.touchedObject == allCarpetParts[allCarpetParts.Count -1] && isChoosingDirection == false)
             {
@@ -78,6 +85,55 @@ public class Carpet : MonoBehaviour
             hasTouchedCarpet = false;
 
         }
+        if (isHiddenCarpetTouched == true && carpetIsInHiddenSpace == true)
+        {
+            if (playerInput.hiddenTouchedObject == allHiddenCarpetParts[allHiddenCarpetParts.Count - 1])
+            {
+            
+                if (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x + 1 < levelmanager.roomDimension &&
+                hiddenSpace.hiddenSpace[allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x + 1,
+                allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y] == null)
+            {
+                fxHiddenSpaceGridPosition.x = allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x +1;
+                fxHiddenSpaceGridPosition.y = allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y;
+                fxHiddenSpaceWorldPosition = hiddenSpace.GetWorldPosition(fxHiddenSpaceGridPosition);
+                selectionFxXPlus = Instantiate(selectionFX, fxHiddenSpaceWorldPosition, Quaternion.identity);
+                selectionFxXPlus.name = "selectionFxXPlus";
+            }
+            if (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x - 1 >= 0 &&
+            hiddenSpace.hiddenSpace[allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x - 1,
+            allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y] == null)
+            {
+                fxHiddenSpaceGridPosition.x = allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x - 1;
+                fxHiddenSpaceGridPosition.y = allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y;
+                fxHiddenSpaceWorldPosition = hiddenSpace.GetWorldPosition(fxHiddenSpaceGridPosition);
+                selectionFxXMinus = Instantiate(selectionFX, fxHiddenSpaceWorldPosition, Quaternion.identity);
+                selectionFxXMinus.name = "selectionFxXMinus";
+            }
+            if (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y + 1 < levelmanager.roomDimension &&
+            hiddenSpace.hiddenSpace[allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x,
+            allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y + 1] == null)
+            {
+                fxHiddenSpaceGridPosition.x = allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x;
+                fxHiddenSpaceGridPosition.y = allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y  + 1;
+                fxHiddenSpaceWorldPosition = hiddenSpace.GetWorldPosition(fxHiddenSpaceGridPosition);
+                selectionFxZPlus = Instantiate(selectionFX, fxHiddenSpaceWorldPosition, Quaternion.identity);
+                selectionFxZPlus.name = "selectionFxZPlus";
+            }
+            if (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y - 1 >= 0 &&
+            hiddenSpace.hiddenSpace[allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x ,
+            allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y - 1 ] == null)
+            {
+                fxHiddenSpaceGridPosition.x = allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x;
+                fxHiddenSpaceGridPosition.y = allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y - 1;
+                fxHiddenSpaceWorldPosition = hiddenSpace.GetWorldPosition(fxHiddenSpaceGridPosition);
+                selectionFxZMinus = Instantiate(selectionFX, fxHiddenSpaceWorldPosition, Quaternion.identity);
+                selectionFxZMinus.name = "selectionFxZMinus";
+            }
+            }
+            isHiddenCarpetTouched = false;
+            
+        }
 
         if (hasTouchedSelectionFX == true)
         {
@@ -85,22 +141,51 @@ public class Carpet : MonoBehaviour
 
             if (playerInput.touchedSelectionFx == selectionFxXPlus)
             {
-                MoveCarpetIn( selectionFxXPlus);
+                if (hasTouchedHiddenSelectionFX)
+                {
+                    MoveHiddenCarpetIn(selectionFxXPlus);
+                }
+                else
+                {
+                    MoveCarpetIn(selectionFxXPlus);
+                }
+                
                 DestroyFX();
             }
             else if (playerInput.touchedSelectionFx == selectionFxXMinus)
             {
-                MoveCarpetIn(selectionFxXMinus);
+                if (hasTouchedHiddenSelectionFX)
+                {
+                    MoveHiddenCarpetIn(selectionFxXMinus);
+                }
+                else
+                {
+                    MoveCarpetIn(selectionFxXMinus);
+                }
                 DestroyFX();
             }
             else if (playerInput.touchedSelectionFx == selectionFxZPlus)
             {
-                MoveCarpetIn(selectionFxZPlus);
+                if (hasTouchedHiddenSelectionFX)
+                {
+                    MoveHiddenCarpetIn(selectionFxZPlus);
+                }
+                else
+                {
+                    MoveCarpetIn(selectionFxZPlus);
+                }
                 DestroyFX();
             }
             else if (playerInput.touchedSelectionFx == selectionFxZMinus)
             {
-                MoveCarpetIn(selectionFxZMinus);
+                if (hasTouchedHiddenSelectionFX)
+                {
+                    MoveHiddenCarpetIn(selectionFxZMinus);
+                }
+                else
+                {
+                    MoveCarpetIn(selectionFxZMinus);
+                }
                 DestroyFX();
             }
 
@@ -171,9 +256,51 @@ public class Carpet : MonoBehaviour
                 if(housePassage.orientation == endCarpetOrientation)
                 {
                     housePassage.passage.PassCarpetRoomToHiddenSpace(hiddenSpaceCarpetPart);
+                    carpetIsInHiddenSpace = true;
+                    
                 }
             }
         }
 
+    }
+
+    void MoveHiddenCarpetIn(GameObject selectedFx)
+    {
+        Vector2 selectedFxDirection = Vector2.zero;
+
+        if (selectedFx == selectionFxXPlus)
+        {
+            selectedFxDirection = Vector2.right;
+            endCarpetOrientation = Orientation.Right;
+        }
+        if (selectedFx == selectionFxXMinus)
+        {
+            selectedFxDirection = Vector2.left;
+            endCarpetOrientation = Orientation.Left;
+        }
+        if (selectedFx == selectionFxZPlus)
+        {
+            selectedFxDirection = Vector2.up;
+            endCarpetOrientation = Orientation.Forward;
+        }
+        if (selectedFx == selectionFxZMinus)
+        {
+            selectedFxDirection = Vector2.down;
+            endCarpetOrientation = Orientation.Backward;
+        }
+
+        Vector2Int nextPosition = new Vector2Int(allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x + (int)selectedFxDirection.x, (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y + (int)selectedFxDirection.y));
+        Debug.Log(nextPosition);
+        while (hiddenSpace.IsInHiddenSpace(nextPosition) && hiddenSpace.hiddenSpace[nextPosition.x, nextPosition.y] == null)
+        {
+
+            HiddenSpaceCarpetPart newCarpet;
+            newCarpet = Instantiate(hiddenSpaceCarpetPart, hiddenSpace.GetWorldPosition(nextPosition), hiddenSpaceCarpetPart.transform.rotation);
+            newCarpet.position = nextPosition;
+            newCarpet.type = HiddenSpaceObjects.Type.carpetPart;
+            allHiddenCarpetParts.Add(newCarpet);
+            hiddenSpace.hiddenSpace[nextPosition.x, nextPosition.y] = newCarpet;
+            nextPosition = new Vector2Int(allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x + (int)selectedFxDirection.x, (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y + (int)selectedFxDirection.y));
+        }
     }
 }

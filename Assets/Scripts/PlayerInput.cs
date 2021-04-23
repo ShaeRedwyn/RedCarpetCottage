@@ -9,18 +9,22 @@ public class PlayerInput : MonoBehaviour
     public LayerMask carpetMask;
     public LayerMask furniture;
     public LayerMask selectionFX;
+    public LayerMask hiddenCarpetMask;
+    
 
     public Carpet carpet;
     [HideInInspector]public HouseObject touchedObject;
     [HideInInspector] public Furniture touchedFurniture;
     [HideInInspector] public GameObject touchedSelectionFx;
+    [HideInInspector] public HiddenSpaceObjects hiddenTouchedObject;
 
-
+    public Camera cameraIso;
+    public Camera camera2D;
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            ray = cameraIso.ScreenPointToRay(Input.mousePosition);
 
             RaycastHit hit;
 
@@ -40,7 +44,30 @@ public class PlayerInput : MonoBehaviour
 
             if (hit.collider != null)
             {
+
                 carpet.hasTouchedSelectionFX = true;
+                touchedSelectionFx = hit.collider.gameObject;
+            }
+
+            ray = camera2D.ScreenPointToRay(Input.mousePosition);
+
+            Physics.Raycast(ray, out hit, 1000f, hiddenCarpetMask);
+
+
+            if (hit.collider != null)
+            {
+             
+                carpet.isHiddenCarpetTouched = true;
+                hiddenTouchedObject = hit.collider.GetComponent<HiddenSpaceObjects>();
+            }
+
+            Physics.Raycast(ray, out hit, 1000f, selectionFX);
+
+
+            if (hit.collider != null)
+            {
+                carpet.hasTouchedSelectionFX = true;
+                carpet.hasTouchedHiddenSelectionFX = true;
                 touchedSelectionFx = hit.collider.gameObject;
             }
 

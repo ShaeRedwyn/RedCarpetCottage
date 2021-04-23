@@ -45,4 +45,5 @@ public class HiddenSpace : MonoBehaviour
 
         return correctPosition;
     }
+
 }
