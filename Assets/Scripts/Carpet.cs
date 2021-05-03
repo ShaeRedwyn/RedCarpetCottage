@@ -16,11 +16,13 @@ public class Carpet : MonoBehaviour
     public LevelManager levelmanager;
 
     public bool hasTouchedCarpet;
+    public bool canMoveFurniture;
     public bool hasTouchedSelectionFX;
     public bool hasTouchedHiddenSelectionFX;
     public bool isChoosingDirection;
     public bool isHiddenCarpetTouched;
     public bool carpetIsInHiddenSpace;
+    public bool hasUnselectCarpet;
 
     public GameObject selectionFX;
     Vector2Int fxHiddenSpaceGridPosition = Vector2Int.zero;
@@ -44,6 +46,8 @@ public class Carpet : MonoBehaviour
         initialCarpet.position.y = (int)initialCarpet.transform.position.y;
         initialCarpet.position.z = (int)initialCarpet.transform.position.z;
         levelmanager.room[initialCarpet.position.x, initialCarpet.position.y, initialCarpet.position.z] = initialCarpet;
+        canMoveFurniture = true;
+        hasUnselectCarpet = false;
     }
 
     void Update()
@@ -85,6 +89,7 @@ public class Carpet : MonoBehaviour
             hasTouchedCarpet = false;
 
         }
+
         if (isHiddenCarpetTouched == true && carpetIsInHiddenSpace == true)
         {
             if (playerInput.hiddenTouchedObject == allHiddenCarpetParts[allHiddenCarpetParts.Count - 1])
@@ -143,11 +148,13 @@ public class Carpet : MonoBehaviour
             {
                 if (hasTouchedHiddenSelectionFX)
                 {
-                    MoveHiddenCarpetIn(selectionFxXPlus);
+                    endCarpetOrientation = Orientation.Right;
+                    MoveHiddenCarpetIn(Vector2.right);
                 }
                 else
                 {
-                    MoveCarpetIn(selectionFxXPlus);
+                    endCarpetOrientation = Orientation.Right;
+                    MoveCarpetIn(Vector3.right);
                 }
                 
                 DestroyFX();
@@ -156,11 +163,13 @@ public class Carpet : MonoBehaviour
             {
                 if (hasTouchedHiddenSelectionFX)
                 {
-                    MoveHiddenCarpetIn(selectionFxXMinus);
+                    endCarpetOrientation = Orientation.Left;
+                    MoveHiddenCarpetIn(Vector2.left);
                 }
                 else
                 {
-                    MoveCarpetIn(selectionFxXMinus);
+                    endCarpetOrientation = Orientation.Left;
+                    MoveCarpetIn(Vector3.left);
                 }
                 DestroyFX();
             }
@@ -168,11 +177,13 @@ public class Carpet : MonoBehaviour
             {
                 if (hasTouchedHiddenSelectionFX)
                 {
-                    MoveHiddenCarpetIn(selectionFxZPlus);
+                    endCarpetOrientation = Orientation.Forward;
+                    MoveHiddenCarpetIn(Vector2.up);
                 }
                 else
                 {
-                    MoveCarpetIn(selectionFxZPlus);
+                    endCarpetOrientation = Orientation.Forward;
+                    MoveCarpetIn(Vector3.forward);
                 }
                 DestroyFX();
             }
@@ -180,19 +191,29 @@ public class Carpet : MonoBehaviour
             {
                 if (hasTouchedHiddenSelectionFX)
                 {
-                    MoveHiddenCarpetIn(selectionFxZMinus);
+                    endCarpetOrientation = Orientation.Backward;
+                    MoveHiddenCarpetIn(Vector2.down);
                 }
                 else
                 {
-                    MoveCarpetIn(selectionFxZMinus);
+                    endCarpetOrientation = Orientation.Backward;
+                    MoveCarpetIn(Vector3.back);
                 }
                 DestroyFX();
             }
 
             hasTouchedSelectionFX = false;
+            canMoveFurniture = true;
         }
 
-
+        if (hasUnselectCarpet == true)
+        {
+            isChoosingDirection = false;
+            DestroyFX();
+            hasTouchedSelectionFX = false;
+            canMoveFurniture = true;
+            hasUnselectCarpet = false;
+        }
 
     }
 
@@ -204,34 +225,11 @@ public class Carpet : MonoBehaviour
         Destroy(selectionFxZMinus);
     }
 
-    void MoveCarpetIn(GameObject selectedFx)
+    public void MoveCarpetIn(Vector3 carpetDirection)
     {
 
-        Vector3 selectedFxDirection = Vector3.zero;
-
-        if(selectedFx == selectionFxXPlus)
-        {
-            selectedFxDirection = Vector3.right;
-            endCarpetOrientation = Orientation.Right;
-        }
-        if (selectedFx == selectionFxXMinus)
-        {
-            selectedFxDirection = Vector3.left;
-            endCarpetOrientation = Orientation.Left;
-        }
-        if (selectedFx == selectionFxZPlus)
-        {
-            selectedFxDirection = Vector3.forward;
-            endCarpetOrientation = Orientation.Forward;
-        }
-        if (selectedFx == selectionFxZMinus)
-        {
-            selectedFxDirection = Vector3.back;
-            endCarpetOrientation = Orientation.Backward;
-        }
-
-        Vector3Int nextPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x + (int)selectedFxDirection.x, (allCarpetParts[allCarpetParts.Count - 1].position.y + (int)selectedFxDirection.y),
-            (allCarpetParts[allCarpetParts.Count - 1].position.z) + (int)selectedFxDirection.z);
+        Vector3Int nextPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x + (int)carpetDirection.x, (allCarpetParts[allCarpetParts.Count - 1].position.y + (int)carpetDirection.y),
+            (allCarpetParts[allCarpetParts.Count - 1].position.z) + (int)carpetDirection.z);
 
         while (levelmanager.IsInRoom(nextPosition) && levelmanager.room[nextPosition.x, nextPosition.y, nextPosition.z] == null)
         {
@@ -242,8 +240,8 @@ public class Carpet : MonoBehaviour
             newCarpet.type = HouseObject.Type.carpetPart;
             allCarpetParts.Add(newCarpet);
             levelmanager.room[nextPosition.x, nextPosition.y, nextPosition.z] = newCarpet;
-            nextPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x + (int)selectedFxDirection.x, (allCarpetParts[allCarpetParts.Count - 1].position.y + (int)selectedFxDirection.y),
-            (allCarpetParts[allCarpetParts.Count - 1].position.z) + (int)selectedFxDirection.z);
+            nextPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x + (int)carpetDirection.x, (allCarpetParts[allCarpetParts.Count - 1].position.y + (int)carpetDirection.y),
+            (allCarpetParts[allCarpetParts.Count - 1].position.z) + (int)carpetDirection.z);
         }
 
 
@@ -256,6 +254,7 @@ public class Carpet : MonoBehaviour
                 if(housePassage.orientation == endCarpetOrientation)
                 {
                     housePassage.passage.PassCarpetRoomToHiddenSpace(hiddenSpaceCarpetPart);
+                    
                     carpetIsInHiddenSpace = true;
                     
                 }
@@ -264,43 +263,51 @@ public class Carpet : MonoBehaviour
 
     }
 
-    void MoveHiddenCarpetIn(GameObject selectedFx)
+    public void MoveHiddenCarpetIn(Vector2 carpetDirection)
     {
-        Vector2 selectedFxDirection = Vector2.zero;
+        bool portalInFront = false;
+        Passages potentialPassage = null;
+        Vector2Int nextPosition = new Vector2Int(allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x + (int)carpetDirection.x, (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y + (int)carpetDirection.y));
+        foreach(HiddenSpacePassage hiddenSpacePassage in hiddenSpace.portalSpace[nextPosition.x, nextPosition.y].hiddenSpacePassages)
+        {
+            if (hiddenSpacePassage.orientation == endCarpetOrientation)
+            {
 
-        if (selectedFx == selectionFxXPlus)
-        {
-            selectedFxDirection = Vector2.right;
-            endCarpetOrientation = Orientation.Right;
-        }
-        if (selectedFx == selectionFxXMinus)
-        {
-            selectedFxDirection = Vector2.left;
-            endCarpetOrientation = Orientation.Left;
-        }
-        if (selectedFx == selectionFxZPlus)
-        {
-            selectedFxDirection = Vector2.up;
-            endCarpetOrientation = Orientation.Forward;
-        }
-        if (selectedFx == selectionFxZMinus)
-        {
-            selectedFxDirection = Vector2.down;
-            endCarpetOrientation = Orientation.Backward;
-        }
+                potentialPassage = hiddenSpacePassage.passage;
 
-        Vector2Int nextPosition = new Vector2Int(allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x + (int)selectedFxDirection.x, (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y + (int)selectedFxDirection.y));
-        Debug.Log(nextPosition);
-        while (hiddenSpace.IsInHiddenSpace(nextPosition) && hiddenSpace.hiddenSpace[nextPosition.x, nextPosition.y] == null)
-        {
+                portalInFront = true;
 
+            }
+        }
+        while (hiddenSpace.IsInHiddenSpace(nextPosition) && hiddenSpace.hiddenSpace[nextPosition.x, nextPosition.y] == null && portalInFront == false)
+        {
             HiddenSpaceCarpetPart newCarpet;
             newCarpet = Instantiate(hiddenSpaceCarpetPart, hiddenSpace.GetWorldPosition(nextPosition), hiddenSpaceCarpetPart.transform.rotation);
             newCarpet.position = nextPosition;
             newCarpet.type = HiddenSpaceObjects.Type.carpetPart;
             allHiddenCarpetParts.Add(newCarpet);
             hiddenSpace.hiddenSpace[nextPosition.x, nextPosition.y] = newCarpet;
-            nextPosition = new Vector2Int(allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x + (int)selectedFxDirection.x, (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y + (int)selectedFxDirection.y));
+            nextPosition = new Vector2Int(allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x + (int)carpetDirection.x, (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y + (int)carpetDirection.y));
+            if (hiddenSpace.IsInHiddenSpace(nextPosition))
+            {
+                foreach (HiddenSpacePassage hiddenSpacePassage in hiddenSpace.portalSpace[nextPosition.x, nextPosition.y].hiddenSpacePassages)
+                {
+                    if (hiddenSpacePassage.orientation == endCarpetOrientation)
+                    {
+
+                        potentialPassage = hiddenSpacePassage.passage;
+                        portalInFront = true;
+
+                    }
+                }
+            }
+        }
+
+        if (portalInFront)
+        {
+            potentialPassage.PassCarpetHiddenSpaceToRoom(carpetPart);
+
+            carpetIsInHiddenSpace = false;
         }
     }
 }

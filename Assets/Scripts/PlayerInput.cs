@@ -10,6 +10,7 @@ public class PlayerInput : MonoBehaviour
     public LayerMask furniture;
     public LayerMask selectionFX;
     public LayerMask hiddenCarpetMask;
+    public LayerMask defaultLayer;
     
 
     public Carpet carpet;
@@ -35,6 +36,7 @@ public class PlayerInput : MonoBehaviour
             {
 
                 carpet.hasTouchedCarpet = true;
+                carpet.canMoveFurniture = false;
                 touchedObject = hit.collider.GetComponent<HouseObject>();
             }
 
@@ -46,7 +48,30 @@ public class PlayerInput : MonoBehaviour
             {
 
                 carpet.hasTouchedSelectionFX = true;
+                carpet.hasTouchedHiddenSelectionFX = false;
                 touchedSelectionFx = hit.collider.gameObject;
+            }
+
+            Physics.Raycast(ray, out hit, 1000f, furniture);
+
+            if (hit.collider != null && carpet.canMoveFurniture == true)
+            {
+                touchedFurniture = hit.collider.transform.parent.GetComponent<Furniture>();
+
+                touchedFurniture.isBeingDragged = true;
+            }
+
+            Physics.Raycast(ray, out hit, 1000f, defaultLayer);
+
+            if (hit.collider != null)
+            {
+                Physics.Raycast(ray, out hit, 1000f, carpetMask);
+
+                if(hit.collider == null)
+                {
+                    carpet.hasUnselectCarpet = true;
+                }
+
             }
 
             ray = camera2D.ScreenPointToRay(Input.mousePosition);
@@ -71,25 +96,19 @@ public class PlayerInput : MonoBehaviour
                 touchedSelectionFx = hit.collider.gameObject;
             }
 
-        }
-
-        if (Input.GetMouseButtonDown(0)) 
-        {
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            RaycastHit hit;
-
-            Physics.Raycast(ray, out hit, 1000f, furniture);
+            Physics.Raycast(ray, out hit, 1000f, defaultLayer);
 
             if (hit.collider != null)
             {
-                touchedFurniture = hit.collider.transform.parent.GetComponent<Furniture>();
+                Physics.Raycast(ray, out hit, 1000f, hiddenCarpetMask);
 
-                touchedFurniture.isBeingDragged = true;
+                if (hit.collider == null)
+                {
+                    carpet.hasUnselectCarpet = true;
+                }
+
             }
         }
-        
-
 
     }
 }

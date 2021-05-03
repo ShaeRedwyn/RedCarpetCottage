@@ -8,11 +8,21 @@ public class HiddenSpace : MonoBehaviour
     public LevelManager levelManager;
     public PortalSpaceObject[,] portalSpace;
     public Vector2Int gridOffset;
+    
 
     public void Awake()
     {
         hiddenSpace = new HiddenSpaceObjects[levelManager.roomDimension,levelManager.roomDimension];
         portalSpace = new PortalSpaceObject[levelManager.roomDimension, levelManager.roomDimension];
+
+        for (int i = 0; i < portalSpace.GetLength(0); i++)
+        {
+            for (int y = 0; y < portalSpace.GetLength(1); y++)
+            {
+                portalSpace[i, y] = new PortalSpaceObject();
+                portalSpace[i, y].position = new Vector2Int(i, y);
+            }
+        }
     }
     // Script qui fait la division de l'espace caché en cases ( tableau à 2 dimension )
     // Référence tout les objets qui sont dans l'espace et leurs emplacement
@@ -46,4 +56,5 @@ public class HiddenSpace : MonoBehaviour
         return correctPosition;
     }
 
+  
 }

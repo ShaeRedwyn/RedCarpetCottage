@@ -6,6 +6,7 @@ public class HousePassage : MonoBehaviour
 {
     public Orientation orientation;
     public Passages passage;
+    public FurniturePart furniturePart;
 
     // referrence la furniture sur laquelle il est attaché
     // référence a passage pour le link a l'autre passage

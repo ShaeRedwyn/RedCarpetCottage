@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HiddenSpacePassage : HiddenSpaceObjects
+public class HiddenSpacePassage : MonoBehaviour
 {
     public Passages passage;
     public Orientation orientation;
