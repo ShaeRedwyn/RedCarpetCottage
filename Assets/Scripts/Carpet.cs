@@ -44,6 +44,8 @@ public class Carpet : MonoBehaviour
 
     private bool isRouling;
 
+    public GameObject victoryPanel;
+
     void Start()
     {
         allCarpetParts.Add(initialCarpet);
@@ -223,6 +225,10 @@ public class Carpet : MonoBehaviour
             hasUnselectCarpet = false;
         }
 
+        if(allCarpetParts[allCarpetParts.Count - 1].position == new Vector3(0,4,0))
+        {
+            victoryPanel.SetActive(true);
+        }
     }
 
     void DestroyFX()
