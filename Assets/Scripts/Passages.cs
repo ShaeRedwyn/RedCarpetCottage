@@ -89,7 +89,7 @@ public class Passages : MonoBehaviour
         hiddenSpace.hiddenSpace[exitPosition.x , exitPosition.y] = newCarpetPart;
         newCarpetPart.position = exitPosition;
         carpet.allHiddenCarpetParts.Add(newCarpetPart);
-        carpet.MoveHiddenCarpetIn(carpetdirection);
+        StartCoroutine(carpet.MoveHiddenCarpetIn(carpetdirection));
 
         housePassage.furniturePart.canMoveFurniture = false;
     }
@@ -120,7 +120,7 @@ public class Passages : MonoBehaviour
         levelManager.room[exitPosition.x, exitPosition.y, exitPosition.z] = newCarpetPart;
         newCarpetPart.position = exitPosition;
         carpet.allCarpetParts.Add(newCarpetPart);
-        carpet.MoveCarpetIn(carpetdirection);
+        StartCoroutine(carpet.MoveCarpetIn(carpetdirection));
 
         housePassage.furniturePart.canMoveFurniture = false;
     }

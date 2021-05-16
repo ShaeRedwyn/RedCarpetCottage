@@ -12,7 +12,7 @@ public class PlayerInput : MonoBehaviour
     public LayerMask selectionFX;
     public LayerMask hiddenCarpetMask;
     public LayerMask defaultLayer;
-    
+    public RectTransform failPanel;
 
     public Carpet carpet;
     [HideInInspector]public HouseObject touchedObject;
@@ -22,9 +22,10 @@ public class PlayerInput : MonoBehaviour
 
     public Camera cameraIso;
     public Camera camera2D;
+    private bool hasFailed;
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && !hasFailed)
         {
             ray = cameraIso.ScreenPointToRay(Input.mousePosition);
 
@@ -114,5 +115,16 @@ public class PlayerInput : MonoBehaviour
         {
             SceneManager.LoadScene(0);
         }
+    }
+
+    public void RestartScene()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void Fail()
+    {
+        failPanel.gameObject.SetActive(true);
+        hasFailed = true;
     }
 }

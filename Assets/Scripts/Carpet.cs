@@ -8,7 +8,8 @@ public class Carpet : MonoBehaviour
     public List<CarpetPart> allCarpetParts;
     public List<HiddenSpaceCarpetPart> allHiddenCarpetParts;
     public HiddenSpace hiddenSpace;
-    public CarpetPart carpetPart;
+    public CarpetPart flatCarpetPartPrefab;
+    public CarpetPart fallingCarpetPartPrefab;
     public HiddenSpaceCarpetPart hiddenSpaceCarpetPart;
     public Transform carpetHolder;
 
@@ -38,6 +39,10 @@ public class Carpet : MonoBehaviour
     GameObject selectionFxZMinus;
 
     public Orientation endCarpetOrientation;
+    [Space]
+    public float carpetMovingSpeed;
+
+    private bool isRouling;
 
     void Start()
     {
@@ -143,18 +148,17 @@ public class Carpet : MonoBehaviour
         if (hasTouchedSelectionFX == true)
         {
             isChoosingDirection = false;
-
             if (playerInput.touchedSelectionFx == selectionFxXPlus)
             {
                 if (hasTouchedHiddenSelectionFX)
                 {
                     endCarpetOrientation = Orientation.Right;
-                    MoveHiddenCarpetIn(Vector2.right);
+                    StartCoroutine(MoveHiddenCarpetIn(Vector2.right));
                 }
                 else
                 {
                     endCarpetOrientation = Orientation.Right;
-                    MoveCarpetIn(Vector3.right);
+                    StartCoroutine(MoveCarpetIn(Vector3.right));
                 }
                 
                 DestroyFX();
@@ -164,12 +168,12 @@ public class Carpet : MonoBehaviour
                 if (hasTouchedHiddenSelectionFX)
                 {
                     endCarpetOrientation = Orientation.Left;
-                    MoveHiddenCarpetIn(Vector2.left);
+                    StartCoroutine(MoveHiddenCarpetIn(Vector2.left));
                 }
                 else
                 {
                     endCarpetOrientation = Orientation.Left;
-                    MoveCarpetIn(Vector3.left);
+                    StartCoroutine(MoveCarpetIn(Vector3.left));
                 }
                 DestroyFX();
             }
@@ -178,12 +182,12 @@ public class Carpet : MonoBehaviour
                 if (hasTouchedHiddenSelectionFX)
                 {
                     endCarpetOrientation = Orientation.Forward;
-                    MoveHiddenCarpetIn(Vector2.up);
+                    StartCoroutine(MoveHiddenCarpetIn(Vector2.up));
                 }
                 else
                 {
                     endCarpetOrientation = Orientation.Forward;
-                    MoveCarpetIn(Vector3.forward);
+                    StartCoroutine(MoveCarpetIn(Vector3.forward));
                 }
                 DestroyFX();
             }
@@ -192,12 +196,12 @@ public class Carpet : MonoBehaviour
                 if (hasTouchedHiddenSelectionFX)
                 {
                     endCarpetOrientation = Orientation.Backward;
-                    MoveHiddenCarpetIn(Vector2.down);
+                    StartCoroutine(MoveHiddenCarpetIn(Vector2.down));
                 }
                 else
                 {
                     endCarpetOrientation = Orientation.Backward;
-                    MoveCarpetIn(Vector3.back);
+                    StartCoroutine(MoveCarpetIn(Vector3.back));
                 }
                 DestroyFX();
             }
@@ -225,52 +229,156 @@ public class Carpet : MonoBehaviour
         Destroy(selectionFxZMinus);
     }
 
-    public void MoveCarpetIn(Vector3 carpetDirection)
+    public IEnumerator MoveCarpetIn(Vector3 carpetDirection)
     {
-
-        Vector3Int forwardPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x + (int)carpetDirection.x, (allCarpetParts[allCarpetParts.Count - 1].position.y + (int)carpetDirection.y),
-            (allCarpetParts[allCarpetParts.Count - 1].position.z) + (int)carpetDirection.z);
-        Vector3Int downwardPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x, (allCarpetParts[allCarpetParts.Count - 1].position.y - 1),
+        Vector3Int currentPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x, (allCarpetParts[allCarpetParts.Count - 1].position.y),
             (allCarpetParts[allCarpetParts.Count - 1].position.z));
-
-        while (levelmanager.IsInRoom(forwardPosition) && levelmanager.room[forwardPosition.x, forwardPosition.y, forwardPosition.z] == null &&
-            (!levelmanager.IsInRoom(downwardPosition) || levelmanager.room[downwardPosition.x, downwardPosition.y, downwardPosition.z] != null))
+        Vector3Int forwardPosition = currentPosition + new Vector3Int((int)carpetDirection.x, (int)carpetDirection.y, (int)carpetDirection.z);
+        Vector3Int downwardPosition = currentPosition + Vector3Int.down;
+        Vector3 edgePos;
+        while ((levelmanager.IsInRoom(forwardPosition) && levelmanager.room[forwardPosition.x, forwardPosition.y, forwardPosition.z] == null) ||
+            (levelmanager.IsInRoom(downwardPosition) && levelmanager.room[downwardPosition.x, downwardPosition.y, downwardPosition.z] == null))
         {
+            if(levelmanager.IsInRoom(downwardPosition) && levelmanager.room[downwardPosition.x, downwardPosition.y, downwardPosition.z] != null && levelmanager.room[downwardPosition.x, downwardPosition.y, downwardPosition.z].type == HouseObject.Type.carpetPart)
+            {
+                playerInput.Fail();
+            }
+            isRouling = true;
+            Vector3 newPos;
+            bool isFalling = false;
             CarpetPart newCarpet;
             if(levelmanager.IsInRoom(downwardPosition) && levelmanager.room[downwardPosition.x, downwardPosition.y, downwardPosition.z] == null)
             {
-                newCarpet = Instantiate(carpetPart, downwardPosition, Quaternion.identity, carpetHolder);
+                newCarpet = Instantiate(fallingCarpetPartPrefab, downwardPosition, Quaternion.identity, carpetHolder);
                 newCarpet.position = downwardPosition;
                 newCarpet.type = HouseObject.Type.carpetPart;
                 allCarpetParts.Add(newCarpet);
                 levelmanager.room[downwardPosition.x, downwardPosition.y, downwardPosition.z] = newCarpet;
+                if(carpetDirection.x == 1)
+                {
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 0, 0);
+                }
+                else if (carpetDirection.x == -1)
+                {
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 180, 0);
+                }
+                else if (carpetDirection.z == 1)
+                {
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 90, 0);
+                }
+                else if (carpetDirection.z == -1)
+                {
+                    newCarpet.transform.rotation = Quaternion.Euler(0, -90, 0);
+                }
+                newPos = downwardPosition;
+                edgePos = Vector3.Lerp(currentPosition, downwardPosition, 0.5f);
+                isFalling = true;
             } 
             else if (levelmanager.IsInRoom(forwardPosition + Vector3Int.down) && levelmanager.room[forwardPosition.x, forwardPosition.y - 1, forwardPosition.z] == null)
             {
                 Vector3Int nextDownPosition = forwardPosition + Vector3Int.down;
-                newCarpet = Instantiate(carpetPart, nextDownPosition, Quaternion.identity, carpetHolder);
+                newCarpet = Instantiate(fallingCarpetPartPrefab, nextDownPosition, Quaternion.identity, carpetHolder);
                 newCarpet.position = nextDownPosition;
                 newCarpet.type = HouseObject.Type.carpetPart;
                 allCarpetParts.Add(newCarpet);
                 levelmanager.room[nextDownPosition.x, nextDownPosition.y, nextDownPosition.z] = newCarpet;
+
+                if (carpetDirection.x == 1)
+                {
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 0, 0);
+                }
+                else if (carpetDirection.x == -1)
+                {
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 180, 0);
+                }
+                else if (carpetDirection.z == 1)
+                {
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 90, 0);
+                }
+                else if (carpetDirection.z == -1)
+                {
+                    newCarpet.transform.rotation = Quaternion.Euler(0, -90, 0);
+                }
+                newPos = nextDownPosition;
+                edgePos = Vector3.Lerp(nextDownPosition + Vector3.up, nextDownPosition, 0.5f);
+                isFalling = true;
             }
             else
             {
-                newCarpet = Instantiate(carpetPart, forwardPosition, Quaternion.identity, carpetHolder);
+                newCarpet = Instantiate(flatCarpetPartPrefab, forwardPosition, Quaternion.identity, carpetHolder);
                 newCarpet.position = forwardPosition;
                 newCarpet.type = HouseObject.Type.carpetPart;
                 allCarpetParts.Add(newCarpet);
                 levelmanager.room[forwardPosition.x, forwardPosition.y, forwardPosition.z] = newCarpet;
+                newPos = forwardPosition;
+
+                if (carpetDirection.x == 1 || carpetDirection.x == -1)
+                {
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 0, 0);
+                }
+                else if (carpetDirection.z == 1 || carpetDirection.z == -1)
+                {
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 90, 0);
+                }
+
+                edgePos = Vector3.Lerp(currentPosition, forwardPosition, 0.5f);
             }
-            forwardPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x + (int)carpetDirection.x, (allCarpetParts[allCarpetParts.Count - 1].position.y + (int)carpetDirection.y),
-            (allCarpetParts[allCarpetParts.Count - 1].position.z) + (int)carpetDirection.z);
-            downwardPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x, (allCarpetParts[allCarpetParts.Count - 1].position.y - 1),
-            (allCarpetParts[allCarpetParts.Count - 1].position.z));
+            float roulingTimer = 0;
+            while(roulingTimer < carpetMovingSpeed)
+            {
+                newCarpet.transform.position = Vector3.Lerp(edgePos, newPos, roulingTimer / carpetMovingSpeed);
+                if(isFalling)
+                {
+                    newCarpet.transform.localScale = new Vector3(1, Mathf.Lerp(0, 1, roulingTimer / carpetMovingSpeed), 1);
+                }
+                else
+                {
+                    newCarpet.transform.localScale = new Vector3(Mathf.Lerp(0, 1, roulingTimer / carpetMovingSpeed), 1, 1);
+                }
+                roulingTimer += Time.deltaTime;
+                yield return new WaitForEndOfFrame();
+            }
 
+            newCarpet.transform.localScale = Vector3.one;
+            newCarpet.transform.position = newPos;
+            newCarpet.position = new Vector3Int((int)newPos.x, (int)newPos.y,(int)newPos.z);
+
+            currentPosition = new Vector3Int(allCarpetParts[allCarpetParts.Count - 1].position.x, (allCarpetParts[allCarpetParts.Count - 1].position.y),
+                (allCarpetParts[allCarpetParts.Count - 1].position.z));
+            forwardPosition = currentPosition + new Vector3Int((int)carpetDirection.x, (int)carpetDirection.y, (int)carpetDirection.z);
+            downwardPosition = currentPosition + Vector3Int.down;
+
+            if(isFalling)
+            {
+                if(!(levelmanager.IsInRoom(downwardPosition) && levelmanager.room[downwardPosition.x, downwardPosition.y, downwardPosition.z] == null))
+                {
+                    newCarpet = Instantiate(flatCarpetPartPrefab, carpetHolder);
+                    if (carpetDirection.x == 1 || carpetDirection.x == -1)
+                    {
+                        newCarpet.transform.rotation = Quaternion.Euler(0, 0, 0);
+                    }
+                    else if (carpetDirection.z == 1 || carpetDirection.z == -1)
+                    {
+                        newCarpet.transform.rotation = Quaternion.Euler(0, 90, 0);
+                    }
+                    edgePos = currentPosition - carpetDirection * 0.5f;
+                    newPos = currentPosition;
+                    roulingTimer = 0;
+                    while (roulingTimer < carpetMovingSpeed)
+                    {
+                        newCarpet.transform.position = Vector3.Lerp(edgePos, newPos, roulingTimer / carpetMovingSpeed);
+                        newCarpet.transform.localScale = new Vector3(Mathf.Lerp(0, 1, roulingTimer / carpetMovingSpeed), 1, 1);
+                        roulingTimer += Time.deltaTime;
+                        yield return new WaitForEndOfFrame();
+                    }
+                    newCarpet.transform.localScale = Vector3.one;
+                    newCarpet.transform.position = newPos;
+                }
+            }
         }
+        isRouling = false;
 
-
-        if(levelmanager.IsInRoom(forwardPosition) && levelmanager.room[forwardPosition.x, forwardPosition.y, forwardPosition.z].type == HouseObject.Type.furniture)
+        if (levelmanager.IsInRoom(forwardPosition) && levelmanager.room[forwardPosition.x, forwardPosition.y, forwardPosition.z] != null && levelmanager.room[forwardPosition.x, forwardPosition.y, forwardPosition.z].type == HouseObject.Type.furniture)
         {
             
             FurniturePart furnitureInFront = (FurniturePart)levelmanager.room[forwardPosition.x, forwardPosition.y, forwardPosition.z];
@@ -288,13 +396,14 @@ public class Carpet : MonoBehaviour
 
     }
 
-    public void MoveHiddenCarpetIn(Vector2 carpetDirection)
+    public IEnumerator MoveHiddenCarpetIn(Vector2 carpetDirection)
     {
         bool portalInFront = false;
         Vector2Int currentPosition = new Vector2Int(allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x, allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y); 
         Passages potentialPassage = null;
         
         Vector2Int nextPosition = new Vector2Int(allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x + (int)carpetDirection.x, (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y + (int)carpetDirection.y));
+
         foreach(HiddenSpacePassage hiddenSpacePassage in hiddenSpace.portalSpace[nextPosition.x, nextPosition.y].hiddenSpacePassages)
         {
             if (hiddenSpacePassage.orientation == endCarpetOrientation)
@@ -306,7 +415,7 @@ public class Carpet : MonoBehaviour
 
             }
         }
-       
+        Vector3 edgeWorldPos;
         while (hiddenSpace.IsInHiddenSpace(nextPosition) && hiddenSpace.hiddenSpace[nextPosition.x, nextPosition.y] == null && portalInFront == false && IsPortalWallInFront(currentPosition, endCarpetOrientation) == false)
         {
             HiddenSpaceCarpetPart newCarpet;
@@ -315,8 +424,37 @@ public class Carpet : MonoBehaviour
             newCarpet.type = HiddenSpaceObjects.Type.carpetPart;
             allHiddenCarpetParts.Add(newCarpet);
             hiddenSpace.hiddenSpace[nextPosition.x, nextPosition.y] = newCarpet;
+
+            Vector3 newWorldPos = hiddenSpace.GetWorldPosition(nextPosition);
+
+            if (carpetDirection.x == 1 || carpetDirection.x == -1)
+            {
+                newCarpet.transform.rotation = Quaternion.Euler(0, 0, 0);
+            }
+            else if (carpetDirection.y == 1 || carpetDirection.y == -1)
+            {
+                newCarpet.transform.rotation = Quaternion.Euler(0, 90, 0);
+            }
+
+            edgeWorldPos = Vector3.Lerp(hiddenSpace.GetWorldPosition(currentPosition), hiddenSpace.GetWorldPosition(nextPosition), 0.5f);
+
+            float roulingTimer = 0;
+            while (roulingTimer < carpetMovingSpeed)
+            {
+                newCarpet.transform.position = Vector3.Lerp(edgeWorldPos, newWorldPos, roulingTimer / carpetMovingSpeed);
+                newCarpet.transform.localScale = new Vector3(Mathf.Lerp(0, 1, roulingTimer / carpetMovingSpeed), 1, 1);
+
+                roulingTimer += Time.deltaTime;
+                yield return new WaitForEndOfFrame();
+            }
+
+            newCarpet.transform.localScale = Vector3.one;
+            newCarpet.transform.position = hiddenSpace.GetWorldPosition(nextPosition);
+            newCarpet.position = nextPosition;
+
             currentPosition = nextPosition;
             nextPosition = new Vector2Int(allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.x + (int)carpetDirection.x, (allHiddenCarpetParts[allHiddenCarpetParts.Count - 1].position.y + (int)carpetDirection.y));
+
             if (hiddenSpace.IsInHiddenSpace(nextPosition))
             {
                 foreach (HiddenSpacePassage hiddenSpacePassage in hiddenSpace.portalSpace[nextPosition.x, nextPosition.y].hiddenSpacePassages)
@@ -334,7 +472,7 @@ public class Carpet : MonoBehaviour
 
         if (portalInFront)
         {
-            potentialPassage.PassCarpetHiddenSpaceToRoom(carpetPart);
+            potentialPassage.PassCarpetHiddenSpaceToRoom(flatCarpetPartPrefab);
 
             carpetIsInHiddenSpace = false;
         }

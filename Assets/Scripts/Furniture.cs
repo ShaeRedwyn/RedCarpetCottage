@@ -108,14 +108,25 @@ public class Furniture : MonoBehaviour
                                     }
                                 }
 
-                                if ((!levelmanager.IsInRoom(furniturePart.position + moveDirection) ||
-                                (levelmanager.room[furniturePart.position.x + moveDirection.x, furniturePart.position.y + moveDirection.y, furniturePart.position.z + moveDirection.z] != null && !isSelfInFront)) ||
-                                (levelmanager.IsInRoom(furniturePart.position + moveDirection + Vector3Int.down) &&
-                                levelmanager.room[furniturePart.position.x + moveDirection.x, furniturePart.position.y - 1 + moveDirection.y, furniturePart.position.z + moveDirection.z].type != HouseObject.Type.wall &&
-                                levelmanager.room[furniturePart.position.x + moveDirection.x, furniturePart.position.y - 1 + moveDirection.y, furniturePart.position.z + moveDirection.z].type != HouseObject.Type.furniture))
+                                if (!levelmanager.IsInRoom(furniturePart.position + moveDirection))
                                 {
                                     atLeastOnePartIsBlocked = true;
                                 }
+                                else 
+                                {
+                                    if ((levelmanager.room[furniturePart.position.x + moveDirection.x, furniturePart.position.y + moveDirection.y, furniturePart.position.z + moveDirection.z] != null && !isSelfInFront))
+                                    {
+                                        atLeastOnePartIsBlocked = true;
+                                    }
+
+                                    if (levelmanager.IsInRoom(furniturePart.position + moveDirection + Vector3Int.down) && (levelmanager.room[furniturePart.position.x + moveDirection.x, furniturePart.position.y - 1 + moveDirection.y, furniturePart.position.z + moveDirection.z] == null ||
+                                    (levelmanager.room[furniturePart.position.x + moveDirection.x, furniturePart.position.y - 1 + moveDirection.y, furniturePart.position.z + moveDirection.z].type != HouseObject.Type.wall &&
+                                    levelmanager.room[furniturePart.position.x + moveDirection.x, furniturePart.position.y - 1 + moveDirection.y, furniturePart.position.z + moveDirection.z].type != HouseObject.Type.furniture)))
+                                    {
+                                        atLeastOnePartIsBlocked = true;
+                                    }
+                                }
+
                             }
 
                             if (!atLeastOnePartIsBlocked)

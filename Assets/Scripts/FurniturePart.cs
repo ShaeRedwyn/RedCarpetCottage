@@ -8,7 +8,7 @@ public class FurniturePart : HouseObject
     public bool canMoveFurniture;
     private void Start()
     {
-        type = HouseObject.Type.furniture;
+        type = Type.furniture;
         foreach(HousePassage passage in allportails)
         {
             passage.furniturePart = this;
