@@ -49,9 +49,9 @@ public class Furniture : MonoBehaviour
 
             if (isBeingDragged == true)
             {
-
                 if (isGroundFurniture == true)
                 {
+
                     minimumSurfaceHeight = 3528;
                     foreach (FurniturePart furniturePart in allFurnitureParts)
                     {
@@ -119,7 +119,7 @@ public class Furniture : MonoBehaviour
                                         atLeastOnePartIsBlocked = true;
                                     }
 
-                                    if (levelmanager.IsInRoom(furniturePart.position + moveDirection + Vector3Int.down) && (levelmanager.room[furniturePart.position.x + moveDirection.x, furniturePart.position.y - 1 + moveDirection.y, furniturePart.position.z + moveDirection.z] == null ||
+                                    if (furniturePart.position.y == minimumSurfaceHeight && levelmanager.IsInRoom(furniturePart.position + moveDirection + Vector3Int.down) && (levelmanager.room[furniturePart.position.x + moveDirection.x, furniturePart.position.y - 1 + moveDirection.y, furniturePart.position.z + moveDirection.z] == null ||
                                     (levelmanager.room[furniturePart.position.x + moveDirection.x, furniturePart.position.y - 1 + moveDirection.y, furniturePart.position.z + moveDirection.z].type != HouseObject.Type.wall &&
                                     levelmanager.room[furniturePart.position.x + moveDirection.x, furniturePart.position.y - 1 + moveDirection.y, furniturePart.position.z + moveDirection.z].type != HouseObject.Type.furniture)))
                                     {

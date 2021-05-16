@@ -62,30 +62,34 @@ public class Carpet : MonoBehaviour
             if (playerInput.touchedObject == allCarpetParts[allCarpetParts.Count -1] && isChoosingDirection == false)
             {
                 isChoosingDirection = true;
-                if (allCarpetParts[allCarpetParts.Count - 1].position.x + 1 < levelmanager.roomDimension &&
+                if ((allCarpetParts[allCarpetParts.Count - 1].position.x + 1 < levelmanager.roomDimension &&
                     levelmanager.room[allCarpetParts[allCarpetParts.Count - 1].position.x + 1,
                     allCarpetParts[allCarpetParts.Count - 1].position.y, allCarpetParts[allCarpetParts.Count - 1].position.z] == null)
+                    || GetFrontHousePassage(allCarpetParts[allCarpetParts.Count - 1].position + Vector3Int.right, Orientation.Right) != null)
                 {
                     selectionFxXPlus = Instantiate(selectionFX, allCarpetParts[allCarpetParts.Count - 1].position + new Vector3Int(1, 0, 0), Quaternion.identity);
                     selectionFxXPlus.name = "selectionFxXPlus";
                 }
-                if (allCarpetParts[allCarpetParts.Count - 1].position.x - 1 >= 0 &&
+                if ((allCarpetParts[allCarpetParts.Count - 1].position.x - 1 >= 0 &&
                     levelmanager.room[allCarpetParts[allCarpetParts.Count - 1].position.x - 1,
-                    allCarpetParts[allCarpetParts.Count - 1].position.y, allCarpetParts[allCarpetParts.Count - 1].position.z] == null)
+                    allCarpetParts[allCarpetParts.Count - 1].position.y, allCarpetParts[allCarpetParts.Count - 1].position.z] == null) || 
+                    GetFrontHousePassage(allCarpetParts[allCarpetParts.Count - 1].position + Vector3Int.left, Orientation.Left) != null)
                 {
                     selectionFxXMinus = Instantiate(selectionFX, allCarpetParts[allCarpetParts.Count - 1].position + new Vector3Int(-1, 0, 0), Quaternion.identity);
                     selectionFxXMinus.name = "selectionFxXMinus";
                 }
-                if (allCarpetParts[allCarpetParts.Count - 1].position.z + 1 < levelmanager.roomDimension &&
+                if ((allCarpetParts[allCarpetParts.Count - 1].position.z + 1 < levelmanager.roomDimension &&
                     levelmanager.room[allCarpetParts[allCarpetParts.Count - 1].position.x,
-                    allCarpetParts[allCarpetParts.Count - 1].position.y, allCarpetParts[allCarpetParts.Count - 1].position.z + 1] == null)
+                    allCarpetParts[allCarpetParts.Count - 1].position.y, allCarpetParts[allCarpetParts.Count - 1].position.z + 1] == null) ||
+                    GetFrontHousePassage(allCarpetParts[allCarpetParts.Count - 1].position + new Vector3Int(0,0,1), Orientation.Forward) != null)
                 {
                     selectionFxZPlus = Instantiate(selectionFX, allCarpetParts[allCarpetParts.Count - 1].position + new Vector3Int(0, 0, 1), Quaternion.identity);
                     selectionFxZPlus.name = "selectionFxZPlus";
                 }
-                if (allCarpetParts[allCarpetParts.Count - 1].position.z - 1 >= 0 &&
+                if ((allCarpetParts[allCarpetParts.Count - 1].position.z - 1 >= 0 &&
                     levelmanager.room[allCarpetParts[allCarpetParts.Count - 1].position.x,
-                    allCarpetParts[allCarpetParts.Count - 1].position.y, allCarpetParts[allCarpetParts.Count - 1].position.z - 1] == null)
+                    allCarpetParts[allCarpetParts.Count - 1].position.y, allCarpetParts[allCarpetParts.Count - 1].position.z - 1] == null) ||
+                    GetFrontHousePassage(allCarpetParts[allCarpetParts.Count - 1].position + new Vector3Int(0,0,-1), Orientation.Backward) != null)
                 {
                     selectionFxZMinus = Instantiate(selectionFX, allCarpetParts[allCarpetParts.Count - 1].position + new Vector3Int(0, 0, -1), Quaternion.identity);
                     selectionFxZMinus.name = "selectionFxZMinus";
@@ -256,11 +260,11 @@ public class Carpet : MonoBehaviour
                 levelmanager.room[downwardPosition.x, downwardPosition.y, downwardPosition.z] = newCarpet;
                 if(carpetDirection.x == 1)
                 {
-                    newCarpet.transform.rotation = Quaternion.Euler(0, 0, 0);
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 180, 0);
                 }
                 else if (carpetDirection.x == -1)
                 {
-                    newCarpet.transform.rotation = Quaternion.Euler(0, 180, 0);
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 0, 0);
                 }
                 else if (carpetDirection.z == 1)
                 {
@@ -285,11 +289,11 @@ public class Carpet : MonoBehaviour
 
                 if (carpetDirection.x == 1)
                 {
-                    newCarpet.transform.rotation = Quaternion.Euler(0, 0, 0);
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 180, 0);
                 }
                 else if (carpetDirection.x == -1)
                 {
-                    newCarpet.transform.rotation = Quaternion.Euler(0, 180, 0);
+                    newCarpet.transform.rotation = Quaternion.Euler(0, 0, 0);
                 }
                 else if (carpetDirection.z == 1)
                 {
@@ -394,6 +398,27 @@ public class Carpet : MonoBehaviour
             }
         }
 
+    }
+
+    private HousePassage GetFrontHousePassage(Vector3Int position, Orientation frontOrientation)
+    {
+        if (levelmanager.IsInRoom(position) && levelmanager.room[position.x, position.y, position.z] != null && levelmanager.room[position.x, position.y, position.z].type == HouseObject.Type.furniture)
+        {
+
+            FurniturePart furnitureInFront = (FurniturePart)levelmanager.room[position.x, position.y, position.z];
+            if(furnitureInFront.canMoveFurniture)
+            {
+                foreach (HousePassage housePassage in furnitureInFront.allportails)
+                {
+                    if (housePassage.orientation == frontOrientation)
+                    {
+                        return housePassage;
+
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public IEnumerator MoveHiddenCarpetIn(Vector2 carpetDirection)
